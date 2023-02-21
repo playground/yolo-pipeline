@@ -1,0 +1,53 @@
+FROM ubuntu:22.04
+
+# Set timezone:
+RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
+
+#ARG SSH_PRIVATE_KEY
+RUN apt-get update && apt-get install -y tzdata curl pip wget git unzip ffmpeg vim && rm -rf /var/lib/apt/lists/*
+RUN pip install virtualenv
+
+ENV VIRTUAL_ENV /env
+ENV PATH /env/bin:$PATH
+
+RUN virtualenv yolov5_training_env
+
+RUN pip3 install numpy
+RUN pip3 install opencv-python
+RUN pip3 install requests
+RUN pip3 install numba
+RUN pip3 install imutils
+RUN pip3 install flask
+RUN pip3 install jsonpickle
+RUN pip3 install Image
+
+# Install miniconda
+ENV CONDA_DIR /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda.sh && \
+     /bin/bash ~/miniconda.sh -b -p /opt/conda
+
+# Put conda in path so we can use conda activate
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+RUN curl https://developer.nvidia.com/downloads/c120-cudnn-local-repo-ubuntu2004-88012110-1arm64deb -o 
+RUN wget https://developer.download.nvidia.com/compute/cuda/12.0.0/local_installers/cuda_12.0.0_525.60.13_linux_sbsa.run
+RUN sh cuda_12.0.0_525.60.13_linux_sbsa.run
+
+RUN curl -sL https://deb.nodesource.com/setup_16.x  | bash
+RUN apt-get -yq install nodejs
+WORKDIR /server
+
+COPY . /server
+
+RUN npm install -g npm
+RUN npm install
+
+RUN git clone https://github.com/pjreddie/darknet
+WORKDIR darknet/
+RUN make
+
+RUN wget https://pjreddie.com/media/files/yolov3.weights -P weights/
+WORKDIR /server
+
+
+

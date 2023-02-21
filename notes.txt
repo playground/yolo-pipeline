@@ -1,0 +1,58 @@
+pip install simple_image_download
+
+predefined_classes.txt
+https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects
+
+
+
+
+filters=(clases + 5)*3
+
+docker run -d -it --rm -v /Users/jeff/Downloads/docuall/:/docuall/ playbox21/yolo-pipeline_arm64:1.0.0
+docker run -d -it --rm --memory="16g" --memory-swap="90g" -v /Users/jeff/Downloads/docuall/:/server/datasets/ playbox21/yolo-pipeline_arm64:1.0.0
+
+python3 train.py --batch 2 --epochs 50 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
+python3 train.py --img 640 --batch 3 --epochs 50 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
+
+python3 train.py --img 640 --batch 16 --epochs 3 --data /docuall/insects_v2/yaml/insects.yaml --weights yolov5s.pt
+python3 train.py --img 640 --batch 16 --epochs 3 --data data/coco128.yaml --weights yolov5s.pt
+
+python3 train.py --img 416 --batch 4 --epochs 3 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
+
+python detect.py --img 416 --source ./detect/test_data --weights ./weights/best.pt --conf-thres 0.4
+
+python3 detect.py --img 416 --source ../datasets/insects_v2/f00237eb-7635-4a64-aa60-526bc98a1fa3.jpg --weights ./weights/best.pt --conf-thres 0.4
+python3 detect.py --img 640 --source ../datasets/insects_v2/f00237eb-7635-4a64-aa60-526bc98a1fa3.jpg --weights runs/train/exp/weights/best.pt --conf-thres 0.4
+python3 detect.py --img 640 --source ../datasets/insects_v2/images/train/butterfly_33.jpg --weights runs/train/exp/weights/best.pt
+
+python3 export.py --weights runs/train/exp/weights/best.pt --include tfjs
+=========================
+docker image prune -a -f
+docker volume list
+docker volume prune -f 
+docker system prune -a -f   
+
+Error: Assertion failed
+    at Object.jspb.asserts.doAssertFailure (/myapp/node_modules/google-protobuf/google-protobuf.js:88:597)
+    at Object.jspb.asserts.assert (/myapp/node_modules/google-protobuf/google-protobuf.js:88:729)
+    at jspb.BinaryReader.readInt64 (/myapp/node_modules/google-protobuf/google-protobuf.js:396:344)
+    at Function.proto.tensorflow.SavedModel.deserializeBinaryFromReader (/myapp/node_modules/@tensorflow/tfjs-node/dist/proto/api_pb.js:9032:49)
+    at Function.proto.tensorflow.SavedModel.deserializeBinary (/myapp/node_modules/@tensorflow/tfjs-node/dist/proto/api_pb.js:9013:38)
+    at /myapp/node_modules/@tensorflow/tfjs-node/dist/saved_model.js:110:63
+    at step (/myapp/node_modules/@tensorflow/tfjs-node/dist/saved_model.js:49:23)
+    at Object.next (/myapp/node_modules/@tensorflow/tfjs-node/dist/saved_model.js:30:53)
+    at fulfilled (/myapp/node_modules/@tensorflow/tfjs-node/dist/saved_model.js:21:58)
+
+Error: Session fail to run with error: {{function_node __inference_pruned_8038}} {{function_node __inference_pruned_8038}} ConcatOp : Dimensions of inputs should match: shape[0] = [1,40,40,256] vs. shape[1] = [1,38,50,256]
+         [[{{node model/tf_concat/concat}}]]
+         [[PartitionedCall/PartitionedCall/PartitionedCall]]
+    at NodeJSKernelBackend.runSavedModel (/myapp/node_modules/@tensorflow/tfjs-node/dist/nodejs_kernel_backend.js:459:43)
+    at TFSavedModel.predict (/myapp/node_modules/@tensorflow/tfjs-node/dist/saved_model.js:364:52)
+    at Observable._subscribe (/myapp/dist/common/utils.js:257:47)
+    at Observable._trySubscribe (/myapp/node_modules/rxjs/dist/cjs/internal/Observable.js:41:25)
+    at /myapp/node_modules/rxjs/dist/cjs/internal/Observable.js:35:31
+    at Object.errorContext (/myapp/node_modules/rxjs/dist/cjs/internal/util/errorContext.js:22:9)
+    at Observable.subscribe (/myapp/node_modules/rxjs/dist/cjs/internal/Observable.js:26:24)
+    at Utils.checkImage (/myapp/dist/common/utils.js:196:26)
+    at Timeout._onTimeout (/myapp/dist/common/utils.js:388:22)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)

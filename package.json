@@ -1,0 +1,20 @@
+{
+  "name": "yolo-pipeline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "pre_process": "scripts/pre-process.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jeff Lu",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^2.11.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "jsonfile": "^6.1.0",
+    "xml-js": "^1.6.11"
+  }
+}

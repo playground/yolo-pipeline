@@ -1,0 +1,26 @@
+FROM ubuntu:22.04
+
+# Set timezone:
+RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
+
+RUN apt-get update && apt-get install -y tzdata curl pip wget git unzip ffmpeg vim xcb pyqt5-dev-tools python3-pip && rm -rf /var/lib/apt/lists/*
+
+RUN pip install virtualenv
+
+ENV VIRTUAL_ENV /env
+ENV PATH /env/bin:$PATH
+
+RUN pip3 install labelImg
+#RUN pip3 install lxml
+#RUN pip3 install setuptools
+
+#RUN git clone https://github.com/tzutalin/labelImg
+
+#RUN pip3 install resources requests staty
+
+#WORKDIR labelImg/
+#RUN make qt5py3
+#RUN pyrcc5 -o libs/resources.py resources.qrc
+
+#ENTRYPOINT ["python3", "/labelImg/labelImg.py"]
+
