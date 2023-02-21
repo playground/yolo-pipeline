@@ -16,6 +16,7 @@ python3 train.py --img 640 --batch 3 --epochs 50 --data ../datasets/insects_v2/y
 
 python3 train.py --img 640 --batch 16 --epochs 3 --data /docuall/insects_v2/yaml/insects.yaml --weights yolov5s.pt
 python3 train.py --img 640 --batch 16 --epochs 3 --data data/coco128.yaml --weights yolov5s.pt
+python3 train.py --img 512 --batch 2 --epochs 3 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
 
 python3 train.py --img 416 --batch 4 --epochs 3 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
 
