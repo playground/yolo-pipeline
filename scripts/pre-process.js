@@ -10,6 +10,7 @@ exec = cp.exec;
 const task = process.env.npm_config_task || 'rename_maximo_assets';
 const modelODPath = `/server/models/research/object_detection`;
 const count = process.env.npm_config_count || 100;
+const forTest = process.env.npm_config_for_text || .2;
 let imageSrcPath = process.env.npm_config_image_source_path;
 let imagePath = process.env.npm_config_image_path;
 const label = process.env.npm_config_label;
@@ -204,6 +205,12 @@ let build = {
         if(!existsSync(`${path}/${dir}`)) {
           mkdirSync(`${path}/${dir}`)
         }  
+        if(!existsSync(`${path}/${dir}/train`)) {
+          mkdirSync(`${path}/${dir}/train`)
+        }  
+        if(!existsSync(`${path}/${dir}/test`)) {
+          mkdirSync(`${path}/${dir}/test`)
+        }  
       })      
       console.log(path, origin)
       let files = readdirSync(path);
@@ -226,48 +233,54 @@ let build = {
     return new Observable((observer) => {
       let $save = {};
       try {
+        console.log(path, imagePath, process.env.npm_config_image_path)
         let classes = readFileSync(`${path}/classes.txt`).toString().split('\n')
-        console.log(classes)
-
+        console.log(classes, xmls.length)
+        let split = xmls.length * forTest;
         xmls.forEach(async(name, i) => {
           let xml = readFileSync(`${path}/${name}`);
           let xmljson = JSON.parse(convert.xml2json(xml, {compact: true, space: 2}));
           // console.log(xmljson.annotation.object)
           let filename = xmljson.annotation.filename._text;
-          if(filename.indexOf('.') < 0) {
-            if(existsSync(`${path}/${filename}.jpg`)) {
-              filename += '.jpg';
-            } else if(existsSync(`${path}/${filename}.jpeg`)) {
-              filename += '.jpeg';
-            } else if(existsSync(`${path}/${filename}.png`)) {
-              filename += '.png';
-            } else if(existsSync(`${path}/${filename}.gif`)) {
-              filename += '.gif';
-            } else {
-              console.log(`file not file ${filename}`);
-              process.exit(0);
-            }
-          }
           let object = xmljson.annotation.object;
           let size = xmljson.annotation.size;  
           if(!Array.isArray(object)) {
             object = [object];
           }
-          let ext, label, txt = '';
+          let index, ext, label, imagename, textname, txt = '';
           object.forEach((obj, idx) => {
             let bbox = obj.bndbox;
-            let index = classes.findIndex((el) => el == obj.name._text);
-            ext = filename.match(/\.[^.]*$/);
-            label = filename.replace(ext, '.txt');
-            txt += `${index} ${bbox.xmin._text} ${bbox.ymin._text} ${bbox.xmax._text} ${bbox.ymax._text}`;
-            if(idx < object.length) {
-              txt += '\n'
+            index = classes.findIndex((el) => el == obj.name._text);
+            if(index >= 0) {
+              let width = (bbox.xmax._text - bbox.xmin._text)/size.width._text;
+              let height = (bbox.ymax._text - bbox.ymin._text)/size.height._text;
+              let x_center = bbox.xmin._text/size.width._text + width/2;
+              let y_center = bbox.ymin._text/size.height._text + height/2;
+              if(i <10) {
+                console.log(filename, bbox.xmin._text, bbox.ymin._text, bbox.xmax._text, bbox.ymax._text, size.width._text, size.height._text)
+              }
+              if(width >1 || height > 1 || x_center > 1 || y_center > 1) {
+                console.log('****', filename, x_center, y_center, width, height, bbox.xmin._text, bbox.ymin._text, bbox.xmax._text, bbox.ymax._text, size.width._text, size.height._text)
+              } 
+              txt += `${index} ${x_center.toFixed(6)} ${y_center.toFixed(6)} ${width.toFixed(6)} ${height.toFixed(6)}`;
+              if(idx < object.length) {
+                txt += '\n'
+              }
+            } else {
+              build.exit(`class not found: ${obj.name._text}, ${filename}`);
             }
           })
-          //writeFileSync(`${path}/labels/${label}`, txt)
-          //copyFileSync(`${path}/${filename}`, `${path}/images/${filename}`)
-          $save[label] = new Observable((obs) => {writeFile(`${path}/labels/${label}`, txt, (err) => {obs.next('done'); obs.complete();})})
-          $save[filename] = new Observable((obs) => {copyFile(`${path}/${filename}`, `${path}/images/${filename}`, err => {obs.next('done'); obs.complete();})})
+          ext = filename.match(/\.[^.]*$/);
+          label = filename.replace(ext, '.txt');
+          imagename = `${classes[index]}_${i}${ext[0]}`
+          textname = `${classes[index]}_${i}.txt`
+          if(i < split) {
+            $save[textname] = new Observable((obs) => {writeFile(`${path}/labels/test/${textname}`, txt, (err) => {obs.next(); obs.complete();})})
+            $save[imagename] = new Observable((obs) => {copyFile(`${path}/${filename}`, `${path}/images/test/${imagename}`, err => {obs.next(); obs.complete();})})  
+          } else {
+            $save[textname] = new Observable((obs) => {writeFile(`${path}/labels/train/${textname}`, txt, (err) => {obs.next(); obs.complete();})})
+            $save[imagename] = new Observable((obs) => {copyFile(`${path}/${filename}`, `${path}/images/train/${imagename}`, err => {obs.next(); obs.complete();})})  
+          }
         })
         forkJoin($save)
         .subscribe({
@@ -292,6 +305,7 @@ let build = {
         console.log(classes, xmls.length)
         let json = jsonfile.readFileSync(`${path}/prop.json`);
         if(classes && json) {
+          let split = xmls.length * forTest;
           xmls.forEach((name, i) => {
             let xml = readFileSync(`${path}/${name}`);
             let xmljson = JSON.parse(convert.xml2json(xml, {compact: true, space: 2}));
@@ -339,8 +353,13 @@ let build = {
               fileid = prop[0]._id;
               imagename = `${classes[index]}_${i}${ext[0]}`
               textname = `${classes[index]}_${i}.txt`
-              $save[textname] = new Observable((obs) => {writeFile(`${path}/labels/train/${textname}`, txt, (err) => {obs.next(); obs.complete();})})
-              $save[imagename] = new Observable((obs) => {copyFile(`${path}/${fileid}${ext[0]}`, `${path}/images/train/${imagename}`, err => {obs.next(); obs.complete();})})
+              if(i < split) {
+                $save[textname] = new Observable((obs) => {writeFile(`${path}/labels/test/${textname}`, txt, (err) => {obs.next(); obs.complete();})})
+                $save[imagename] = new Observable((obs) => {copyFile(`${path}/${fileid}${ext[0]}`, `${path}/images/test/${imagename}`, err => {obs.next(); obs.complete();})})  
+              } else {
+                $save[textname] = new Observable((obs) => {writeFile(`${path}/labels/train/${textname}`, txt, (err) => {obs.next(); obs.complete();})})
+                $save[imagename] = new Observable((obs) => {copyFile(`${path}/${fileid}${ext[0]}`, `${path}/images/train/${imagename}`, err => {obs.next(); obs.complete();})})
+              }
 
               //$save[fileid+i] = new Observable((obs) => {
               //  (async() => {

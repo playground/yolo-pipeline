@@ -30,6 +30,7 @@ RUN pip3 install -r requirements.txt
 RUN pip3 install tensorflowjs
 RUN pip3 install simple_image_download
 RUN pip3 install bing_image_downloader
+RUN pip3 install auto-annotate
 
 # convert model to tensorflow.js format
 #python export.py --weights yolov5s.pt --include tfjs
