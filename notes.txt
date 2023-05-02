@@ -10,6 +10,9 @@ filters=(clases + 5)*3
 
 docker run -d -it --rm -v /Users/jeff/Downloads/docuall/:/docuall/ playbox21/yolo-pipeline_arm64:1.0.0
 docker run -d -it --rm --memory="16g" --memory-swap="90g" -v /Users/jeff/Downloads/docuall/:/server/datasets/ playbox21/yolo-pipeline_arm64:1.0.0
+docker run -d -it --rm --memory="16g" --memory-swap="90g" -v /Users/ljeff/Downloads/docuall/:/server/datasets/ playbox21/yolo-pipeline_amd64:1.0.0
+
+npm run pre_process --task=xml_to_txt --image_path=/server/datasets/fingers/yolov5
 
 python3 train.py --batch 2 --epochs 50 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
 python3 train.py --img 640 --batch 3 --epochs 50 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
@@ -17,6 +20,13 @@ python3 train.py --img 640 --batch 3 --epochs 50 --data ../datasets/insects_v2/y
 python3 train.py --img 640 --batch 16 --epochs 3 --data /docuall/insects_v2/yaml/insects.yaml --weights yolov5s.pt
 python3 train.py --img 640 --batch 16 --epochs 3 --data data/coco128.yaml --weights yolov5s.pt
 python3 train.py --img 512 --batch 2 --epochs 3 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
+python3 train.py --img 512 --batch 2 --epochs 30 --data ../datasets/fingers/yolo/yaml/template.yaml --weights yolov5s.pt
+3 epochs completed in 0.392 hours.
+Optimizer stripped from runs/train/exp/weights/last.pt, 14.3MB
+Optimizer stripped from runs/train/exp/weights/best.pt, 14.3MB
+
+Validating runs/train/exp/weights/best.pt...
+
 
 python3 train.py --img 416 --batch 4 --epochs 3 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
 
@@ -27,6 +37,15 @@ python3 detect.py --img 640 --source ../datasets/insects_v2/f00237eb-7635-4a64-a
 python3 detect.py --img 640 --source ../datasets/insects_v2/images/train/butterfly_33.jpg --weights runs/train/exp/weights/best.pt
 
 python3 export.py --weights runs/train/exp/weights/best.pt --include tfjs
+
+=========================
+auto labeling
+
+python3 -m auto_annotate --label_map_path /server/datasets/fingers/sample2/labelmap.pbtxt \
+--saved_model_path /server/yolov5/runs/train/exp/weights/best_saved_model \
+--imgs_path /server/datasets/fingers/sample2 \
+--xml_path /server/datasets/fingers/sample2 \
+--threshold 0.65
 =========================
 docker image prune -a -f
 docker volume list

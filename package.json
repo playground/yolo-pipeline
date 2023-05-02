@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "pre_process": "scripts/pre-process.js",
+    "tfjs_to_yolo": "npm run pre_process --task=tfjs_to_yolo",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jeff Lu",
