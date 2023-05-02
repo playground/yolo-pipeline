@@ -21,6 +21,11 @@ python3 train.py --img 640 --batch 16 --epochs 3 --data /docuall/insects_v2/yaml
 python3 train.py --img 640 --batch 16 --epochs 3 --data data/coco128.yaml --weights yolov5s.pt
 python3 train.py --img 512 --batch 2 --epochs 3 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
 python3 train.py --img 512 --batch 2 --epochs 30 --data ../datasets/fingers/yolo/yaml/template.yaml --weights yolov5s.pt
+3 epochs completed in 0.392 hours.
+Optimizer stripped from runs/train/exp/weights/last.pt, 14.3MB
+Optimizer stripped from runs/train/exp/weights/best.pt, 14.3MB
+
+Validating runs/train/exp/weights/best.pt...
 
 
 python3 train.py --img 416 --batch 4 --epochs 3 --data ../datasets/insects_v2/yaml/insects.yaml --weights yolov5s.pt
